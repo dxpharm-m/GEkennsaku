@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>後発品薬価チェッカー 2026 (機能拡張版)</title>
+<title>後発品薬価チェッカー 2026 (修正版)</title>
 <style>
   :root {
     --primary: #2563eb;
@@ -26,330 +26,66 @@
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
-    background: var(--bg);
-    color: var(--text-main);
-    min-height: 100vh;
-    line-height: 1.5;
-  }
-
-  header {
-    background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
-    color: white;
-    padding: 16px 24px;
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-  }
-  header h1 { font-size: 1.5rem; font-weight: 700; }
-  header p { font-size: 0.85rem; opacity: 0.9; margin-top: 4px; }
-
+  body { font-family: sans-serif; background: var(--bg); color: var(--text-main); line-height: 1.5; }
+  header { background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%); color: white; padding: 16px 24px; }
   .container { max-width: 1400px; margin: 0 auto; padding: 24px 16px; }
+  .search-panels { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+  .panel { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+  .bulk-textarea, .search-input { width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; margin-bottom: 12px; font-size: 1rem; }
+  .btn { padding: 12px 24px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+  .btn-outline { background: white; color: var(--primary); border: 1px solid var(--border); }
+  
+  /* ツールバー */
+  .results-toolbar { display: flex; align-items: center; justify-content: space-between; padding: 12px; background: white; border-bottom: 1px solid var(--border); }
+  .chip { padding: 4px 12px; border-radius: 999px; font-size: 0.8rem; cursor: pointer; border: 1px solid var(--border); background: #eee; }
+  .chip.active { background: var(--primary); color: white; }
 
-  .search-panels {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-    margin-bottom: 24px;
-  }
-
-  .panel {
-    background: white;
-    border-radius: 12px;
-    padding: 24px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    display: flex;
-    flex-direction: column;
-  }
-  .panel h2 { font-size: 1.1rem; margin-bottom: 8px; color: var(--text-main); }
-  .panel p.desc { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px; }
-
-  .bulk-textarea {
-    width: 100%;
-    height: 100px;
-    padding: 12px;
-    border: 2px solid var(--border);
-    border-radius: 8px;
-    font-family: monospace;
-    font-size: 0.9rem;
-    resize: vertical;
-    outline: none;
-    transition: border-color 0.2s;
-    margin-bottom: 12px;
-  }
-  .bulk-textarea:focus { border-color: var(--primary); }
-
-  .search-input {
-    width: 100%;
-    padding: 12px 16px;
-    font-size: 1rem;
-    border: 2px solid var(--border);
-    border-radius: 8px;
-    outline: none;
-    transition: border-color 0.2s;
-    margin-bottom: 12px;
-  }
-  .search-input:focus { border-color: var(--primary); }
-
-  .btn {
-    padding: 12px 24px;
-    background: var(--primary);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 1rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background 0.2s;
-    text-align: center;
-  }
-  .btn:hover { background: var(--primary-hover); }
-
-  .btn-outline {
-    background: white;
-    color: var(--primary);
-    border: 1px solid var(--border);
-  }
-  .btn-outline:hover { background: #f1f5f9; border-color: var(--primary); }
-
-  .results-toolbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 16px;
-    background: white;
-    border-radius: 12px 12px 0 0;
-    border-bottom: 1px solid var(--border);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    gap: 12px;
-    flex-wrap: wrap;
-  }
-  .toolbar-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
-  .results-count {
-    font-size: 0.9rem;
-    color: var(--text-muted);
-  }
-  .results-count strong { color: var(--text-main); }
-
-  .filter-chips {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-    align-items: center;
-  }
-  .filter-label {
-    font-size: 0.8rem;
-    color: var(--text-muted);
-    white-space: nowrap;
-  }
-  .chip {
-    padding: 4px 10px;
-    border-radius: 999px;
-    font-size: 0.78rem;
-    font-weight: bold;
-    cursor: pointer;
-    border: 1.5px solid transparent;
-    transition: all 0.15s;
-    background: var(--ignore-bg);
-    color: var(--text-muted);
-    border-color: var(--ignore-border);
-    user-select: none;
-  }
-  .chip.active-reversed { background: var(--danger-bg); color: var(--danger-text); border-color: var(--danger-border); }
-  .chip.active-same     { background: var(--warning-bg); color: var(--warning-text); border-color: var(--warning-border); }
-  .chip.active-ok       { background: #f0fdf4; color: #166534; border-color: var(--secondary); }
-  .chip.active-all      { background: #eff6ff; color: var(--primary); border-color: var(--primary); }
-  .chip:hover { opacity: 0.8; }
-
-  .btn-export {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 16px;
-    background: var(--secondary);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 0.88rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background 0.2s, opacity 0.2s;
-    white-space: nowrap;
-  }
-  .btn-export:hover { background: #047857; }
-  .btn-export:disabled { opacity: 0.4; cursor: not-allowed; }
-
-  .export-wrapper { position: relative; }
-  .export-dropdown {
-    display: none;
-    position: absolute;
-    right: 0;
-    top: calc(100% + 6px);
-    background: white;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-    min-width: 220px;
-    z-index: 100;
-    overflow: hidden;
-  }
-  .export-dropdown.open { display: block; }
-  .export-option {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 11px 14px;
-    font-size: 0.88rem;
-    cursor: pointer;
-    color: var(--text-main);
-    transition: background 0.1s;
-    border: none;
-    background: none;
-    width: 100%;
-    text-align: left;
-  }
-  .export-option:hover { background: #f8fafc; }
-
-  .toast {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    background: #1e293b;
-    color: white;
-    padding: 12px 18px;
-    border-radius: 10px;
-    font-size: 0.88rem;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transform: translateY(80px);
-    opacity: 0;
-    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s;
-    z-index: 9999;
-    pointer-events: none;
-  }
-  .toast.show { transform: translateY(0); opacity: 1; }
-
-  .results-wrapper {
-    background: white;
-    border-radius: 0 0 12px 12px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    overflow-x: auto;
-  }
-  table { width: 100%; border-collapse: collapse; min-width: 1200px; }
-  th {
-    background: #f1f5f9;
-    padding: 12px 8px;
-    text-align: left;
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    border-bottom: 2px solid var(--border);
-    white-space: nowrap;
-    cursor: pointer; /* 並び替え可能であることを示す */
-    position: relative;
-  }
+  /* テーブル設定 */
+  .results-wrapper { background: white; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 1000px; }
+  th { background: #f1f5f9; padding: 12px; text-align: left; cursor: pointer; position: relative; user-select: none; }
   th:hover { background: #e2e8f0; }
-  th::after { content: '↕'; position: absolute; right: 4px; opacity: 0.3; }
+  td { padding: 12px; border-bottom: 1px solid var(--border); }
+  .price-col { text-align: right; }
+  
+  /* 判定色 */
+  .row-reversed { background-color: var(--danger-bg); border-left: 5px solid var(--danger-border); }
+  .row-same { background-color: var(--warning-bg); border-left: 5px solid var(--warning-border); }
+  .row-ok { background-color: #f0fdf4; border-left: 5px solid var(--secondary); }
 
-  td {
-    padding: 12px 8px;
-    vertical-align: middle;
-    border-bottom: 1px solid var(--border);
-    font-size: 0.9rem;
-  }
-
-  .row-reversed { background-color: var(--danger-bg); border-left: 6px solid var(--danger-border); }
-  .row-same     { background-color: var(--warning-bg); border-left: 6px solid var(--warning-border); }
-  .row-ok       { background-color: var(--safe-bg); border-left: 6px solid var(--secondary); }
-  .row-ignore   { background-color: var(--ignore-bg); border-left: 6px solid var(--ignore-border); color: #475569; }
-
-  .price-col { text-align: right; font-variant-numeric: tabular-nums; }
-  .text-danger  { color: var(--danger-text); font-weight: bold; }
-  .text-warning { color: var(--warning-text); font-weight: bold; }
-
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.5);
-    z-index: 1000;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(2px);
-  }
-  .modal-content {
-    background: white;
-    border-radius: 12px;
-    width: 95%;
-    max-width: 1200px; /* ウィンドウを拡大 */
-    max-height: 85vh;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
-  }
-  .modal-header {
-    padding: 20px 24px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .close-btn { background: none; border: none; font-size: 1.5rem; color: var(--text-muted); cursor: pointer; }
-  .modal-body { padding: 24px; overflow-y: auto; }
-
-  .alt-table { width: 100%; border-collapse: collapse; }
-  .alt-table th, .alt-table td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
-  .cheapest-row { background-color: #f0fdf4; }
-
-  #emptyMessage { padding: 40px; text-align: center; color: var(--text-muted); font-size: 1.1rem; }
-
-  @media (max-width: 900px) {
-    .search-panels { grid-template-columns: 1fr; gap: 16px; }
-  }
+  /* モーダル (他メーカー比較) - 横幅を拡大 */
+  .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
+  .modal-content { background: white; border-radius: 12px; width: 95%; max-width: 1100px; max-height: 80vh; overflow-y: auto; padding: 24px; }
+  .close-btn { float: right; font-size: 1.5rem; cursor: pointer; border: none; background: none; }
 </style>
 </head>
 <body>
 
 <header>
   <h1>後発品薬価チェッカー 2026</h1>
-  <p>YJコードの一括抽出、および複数キーワードによる医薬品名検索に対応しています。</p>
 </header>
 
 <div class="container">
   <div class="search-panels">
     <div class="panel">
       <h2>YJコード一括検索</h2>
-      <p class="desc">テキストを貼り付けるとYJコードを抽出して一括判定します。</p>
-      <textarea id="bulkInput" class="bulk-textarea" placeholder="ここにペースト..."></textarea>
-      <button class="btn" onclick="performBulkSearch()">一括抽出して検索</button>
+      <textarea id="bulkInput" class="bulk-textarea" placeholder="テキストを貼り付け..."></textarea>
+      <button class="btn" onclick="performBulkSearch()">検索実行</button>
     </div>
     <div class="panel">
-      <h2>医薬品名で個別検索</h2>
-      <p class="desc">キーワードをスペースで区切ると絞り込みが可能です（例: アムロ 東和）。</p>
-      <input type="text" id="searchInput" class="search-input" placeholder="例: アムロジピン、あむろじぴん" onkeypress="handleKeyPress(event)">
+      <h2>医薬品名で検索</h2>
+      <input type="text" id="searchInput" class="search-input" placeholder="例: あむろ 5mg" onkeypress="if(event.key==='Enter')performNameSearch()">
       <button class="btn" onclick="performNameSearch()">名前で検索</button>
-      <div style="flex-grow: 1;"></div>
-      <button class="btn btn-outline" onclick="clearResults()" style="margin-top: 16px;">結果をクリア</button>
     </div>
   </div>
 
-  <div class="results-toolbar" id="resultsToolbar">
-    <div class="toolbar-left">
-      <div class="results-count" id="resultsCount"><strong>0</strong> 件表示中</div>
-      <div class="filter-chips">
-        <span class="filter-label">絞り込み：</span>
-        <span class="chip active-all" id="chip-all" onclick="toggleFilter('all')">すべて</span>
-        <span class="chip" id="chip-reversed" onclick="toggleFilter('reversed')">薬価逆転</span>
-        <span class="chip" id="chip-same" onclick="toggleFilter('same')">先発と同額</span>
-        <span class="chip" id="chip-ok" onclick="toggleFilter('ok')">適正（安い）</span>
-      </div>
+  <div class="results-toolbar">
+    <div id="resultsCount"><strong>0</strong> 件表示中</div>
+    <div class="filter-chips">
+      <button class="chip" onclick="toggleFilter('all')">すべて</button>
+      <button class="chip" onclick="toggleFilter('row-reversed')">薬価逆転</button>
+      <button class="chip" onclick="toggleFilter('row-same')">同額</button>
     </div>
-    <button class="btn-export" id="exportBtn" onclick="exportCSV('current')" disabled>CSV保存</button>
   </div>
 
   <div class="results-wrapper">
@@ -358,44 +94,36 @@
         <tr>
           <th onclick="sortTable(0)">判定</th>
           <th onclick="sortTable(1)">YJコード</th>
-          <th onclick="sortTable(2)">品名 / 規格</th>
-          <th onclick="sortTable(3)">区分</th>
-          <th onclick="sortTable(4)" class="price-col">旧薬価</th>
-          <th onclick="sortTable(5)" class="price-col">新薬価</th>
-          <th onclick="sortTable(6)" class="price-col">変化</th>
-          <th onclick="sortTable(7)">先発品名</th>
-          <th onclick="sortTable(8)" class="price-col">先発薬価</th>
-          <th onclick="sortTable(9)" class="price-col">差額</th>
+          <th onclick="sortTable(2)">品名</th>
+          <th onclick="sortTable(4)">メーカー</th>
+          <th class="price-col" onclick="sortTable(5)">旧薬価</th>
+          <th class="price-col" onclick="sortTable(7)">新薬価</th>
+          <th class="price-col">差額(先発)</th>
           <th>他社比較</th>
         </tr>
       </thead>
       <tbody id="resultBody"></tbody>
     </table>
-    <div id="emptyMessage">検索条件を入力してください。</div>
+    <div id="emptyMessage" style="text-align:center; padding:20px;">条件を入力してください。</div>
   </div>
 </div>
 
-<div id="altModal" class="modal-overlay" onclick="closeModal()">
+<div id="altModal" class="modal-overlay" onclick="this.style.display='none'">
   <div class="modal-content" onclick="event.stopPropagation()">
-    <div class="modal-header">
-      <h3 id="modalTitle">他メーカーのジェネリック比較</h3>
-      <button class="close-btn" onclick="closeModal()">&times;</button>
-    </div>
-    <div class="modal-body">
-      <table class="alt-table">
-        <thead>
-          <tr>
-            <th>メーカー</th>
-            <th>品名</th>
-            <th class="price-col">旧薬価</th>
-            <th class="price-col">新薬価</th>
-            <th class="price-col">新旧差</th>
-            <th class="price-col">先発との差額</th>
-          </tr>
-        </thead>
-        <tbody id="altModalBody"></tbody>
-      </table>
-    </div>
+    <button class="close-btn" onclick="document.getElementById('altModal').style.display='none'">&times;</button>
+    <h3>他メーカーのジェネリック比較</h3>
+    <table style="width:100%; margin-top:20px;">
+      <thead>
+        <tr>
+          <th>メーカー</th>
+          <th>品名</th>
+          <th class="price-col">旧薬価</th>
+          <th class="price-col">新薬価</th>
+          <th class="price-col">先発との差</th>
+        </tr>
+      </thead>
+      <tbody id="altModalBody"></tbody>
+    </table>
   </div>
 </div>
 
@@ -412,133 +140,100 @@ const OP = {"1121001X1018":7.5,"1123001X1012":36.9,"1124001B1039":39.3,"1124001F
 
 ];
 
-let currentResults = [];
-let sortDirection = 1;
-
-function handleKeyPress(e) { if (e.key === 'Enter') performNameSearch(); }
+let currentDisplayData = [];
+let sortOrder = 1;
 
 function performNameSearch() {
-  const input = document.getElementById('searchInput').value.trim();
-  if (!input) return;
-  
-  // 複数キーワード対応 (スペース区切り)
-  const keywords = input.toLowerCase().split(/[\s　]+/).filter(k => k);
-  
+  const query = document.getElementById('searchInput').value.trim().toLowerCase();
+  if (!query) return;
+  const keywords = query.split(/[\s　]+/); // スペースで分割（複数キーワード対応）
+
   const filtered = NM.filter(item => {
-    const targetText = (item[1] + item[2] + (item[4]||"")).toLowerCase();
-    // すべてのキーワードが含まれているか (AND検索)
-    return keywords.every(kw => targetText.includes(kw));
+    const text = (item[1] + (item[2]||"") + (item[4]||"")).toLowerCase();
+    return keywords.every(kw => text.includes(kw)); // 全キーワードを含むか
   });
-  
   displayResults(filtered);
 }
 
 function performBulkSearch() {
   const text = document.getElementById('bulkInput').value;
-  const yjRegex = /[0-9A-Z]{12}/g;
-  const codes = [...new Set(text.match(yjRegex) || [])];
-  const filtered = NM.filter(item => codes.includes(item[0]));
+  const codes = text.match(/[0-9A-Z]{12}/g) || [];
+  const uniqueCodes = [...new Set(codes)];
+  const filtered = NM.filter(item => uniqueCodes.includes(item[0]));
   displayResults(filtered);
 }
 
 function displayResults(data) {
-  currentResults = data;
+  currentDisplayData = data;
   const tbody = document.getElementById('resultBody');
-  const empty = document.getElementById('emptyMessage');
   tbody.innerHTML = '';
+  document.getElementById('emptyMessage').style.display = data.length ? 'none' : 'block';
   
-  if (data.length === 0) {
-    empty.style.display = 'block';
-    document.getElementById('exportBtn').disabled = true;
-    return;
-  }
-  
-  empty.style.display = 'none';
-  document.getElementById('exportBtn').disabled = false;
-
   data.forEach(item => {
-    const oldPrice = item[5];
-    const newPrice = item[7];
-    const originalPrice = item[6]; // 元データの構造に合わせる
-    const diff = newPrice - (originalPrice || 0);
+    const oldP = item[5];
+    const newP = item[7];
+    const baseP = item[5]; // 先発薬価のデータが不足している場合は旧薬価を基準に
     
-    let status = 'ok';
-    let statusText = '適正';
-    if (!originalPrice) status = 'ignore';
-    else if (newPrice > originalPrice) { status = 'reversed'; statusText = '薬価逆転'; }
-    else if (newPrice === originalPrice) { status = 'same'; statusText = '同額'; }
+    let status = 'row-ok';
+    let statusTxt = '適正';
+    if (newP > oldP) { status = 'row-reversed'; statusTxt = '逆転'; }
+    else if (newP === oldP) { status = 'row-same'; statusTxt = '同額'; }
 
     const tr = document.createElement('tr');
-    tr.className = `row-${status}`;
+    tr.className = status;
     tr.innerHTML = `
-      <td>${statusText}</td>
+      <td>${statusTxt}</td>
       <td>${item[0]}</td>
-      <td><strong>${item[1]}</strong><br><small>${item[2]}</small></td>
+      <td>${item[1]}<br><small>${item[3]}</small></td>
       <td>${item[4] || '-'}</td>
-      <td class="price-col">${oldPrice.toFixed(1)}</td>
-      <td class="price-col"><strong>${newPrice.toFixed(1)}</strong></td>
-      <td class="price-col">${(newPrice - oldPrice).toFixed(1)}</td>
-      <td>${item[8] || '-'}</td>
-      <td class="price-col">${originalPrice ? originalPrice.toFixed(1) : '-'}</td>
-      <td class="price-col ${newPrice >= originalPrice ? 'text-danger' : ''}">${originalPrice ? (newPrice - originalPrice).toFixed(1) : '-'}</td>
-      <td><button class="btn btn-outline" style="padding:4px 8px;font-size:0.75rem" onclick="showAlternatives('${item[2]}', ${originalPrice})">他社比較</button></td>
+      <td class="price-col">${oldP.toFixed(1)}</td>
+      <td class="price-col"><strong>${newP.toFixed(1)}</strong></td>
+      <td class="price-col">${(newP - oldP).toFixed(1)}</td>
+      <td><button class="btn-outline" style="padding:4px 8px;" onclick="showAlts('${item[2]}', ${oldP})">比較</button></td>
     `;
     tbody.appendChild(tr);
   });
-  updateCount();
+  document.querySelector('#resultsCount strong').textContent = data.length;
 }
 
-// ソート機能
-function sortTable(columnIndex) {
-  sortDirection *= -1;
-  currentResults.sort((a, b) => {
-    let valA = a[columnIndex] || '';
-    let valB = b[columnIndex] || '';
-    if (typeof valA === 'number' && typeof valB === 'number') return (valA - valB) * sortDirection;
-    return valA.toString().localeCompare(valB.toString(), 'ja') * sortDirection;
+function sortTable(idx) {
+  sortOrder *= -1;
+  currentDisplayData.sort((a, b) => {
+    const valA = a[idx];
+    const valB = b[idx];
+    return (valA < valB ? -1 : 1) * sortOrder;
   });
-  displayResults(currentResults);
+  displayResults(currentDisplayData);
 }
 
-function showAlternatives(component, origPrice) {
-  const modal = document.getElementById('altModal');
+function showAlts(component, baseP) {
+  const alts = NM.filter(item => item[2] === component);
   const tbody = document.getElementById('altModalBody');
   tbody.innerHTML = '';
   
-  const alts = NM.filter(item => item[2] === component).sort((a, b) => a[7] - b[7]);
-  
-  alts.forEach((item, idx) => {
+  alts.sort((a,b) => a[7] - b[7]).forEach(item => {
     const tr = document.createElement('tr');
-    if (idx === 0) tr.className = 'cheapest-row';
-    const newOldDiff = item[7] - item[5];
-    const toOrigDiff = origPrice ? item[7] - origPrice : null;
-    
     tr.innerHTML = `
-      <td>${item[4] || '不明'}</td>
+      <td>${item[4]||'-'}</td>
       <td>${item[1]}</td>
       <td class="price-col">${item[5].toFixed(1)}</td>
-      <td class="price-col"><strong>${item[7].toFixed(1)}</strong></td>
-      <td class="price-col">${newOldDiff.toFixed(1)}</td>
-      <td class="price-col">${toOrigDiff !== null ? toOrigDiff.toFixed(1) : '-'}</td>
+      <td class="price-col">${item[7].toFixed(1)}</td>
+      <td class="price-col">${(item[7] - baseP).toFixed(1)}</td>
     `;
     tbody.appendChild(tr);
   });
-  
-  modal.style.display = 'flex';
+  document.getElementById('altModal').style.display = 'flex';
 }
 
-function closeModal() { document.getElementById('altModal').style.display = 'none'; }
-function updateCount() { document.querySelector('#resultsCount strong').textContent = currentResults.length; }
-function clearResults() { currentResults = []; displayResults([]); document.getElementById('searchInput').value = ''; }
-
-// フィルター簡易版
-function toggleFilter(type) {
+function toggleFilter(className) {
   const rows = document.querySelectorAll('#resultBody tr');
   rows.forEach(row => {
-    if (type === 'all') row.style.display = '';
-    else row.style.display = row.className.includes(type) ? '' : 'none';
+    row.style.display = (className === 'all' || row.className === className) ? '' : 'none';
   });
 }
 </script>
 </body>
 </html>
+
+
+
